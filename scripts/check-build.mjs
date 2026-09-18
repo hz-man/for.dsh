@@ -38,9 +38,10 @@ async function main() {
     const title = pick(html, /<title>(.*?)<\/title>/);
     const desc = pick(html, /<meta name="description" content="(.*?)"/);
     const canonical = pick(html, /rel="canonical" href="(.*?)"/);
+    const ogImage = pick(html, /property="og:image" content="(.*?)"/);
     const imgs = [...html.matchAll(/<img[^>]*>/g)].map((m) => m[0]);
     const withSrcset = imgs.filter((t) => /srcset=/.test(t)).length;
-    const lazy = imgs.filter((t) => /loading="lazy"/).test ? imgs.filter((t) => /loading="lazy"/.test(t)).length : 0;
+    const lazy = imgs.filter((t) => /loading="lazy"/.test(t)).length;
     const formats = new Set(
       imgs.map((t) => (t.match(/\.(webp|avif|png|jpe?g)/i) ?? [])[1]?.toLowerCase()).filter(Boolean),
     );
@@ -49,12 +50,23 @@ async function main() {
     console.log(`  title      ${title}`);
     console.log(`  description ${desc}`);
     console.log(`  canonical  ${canonical}`);
+    console.log(`  og:image   ${ogImage}`);
     console.log(`  <img>      ${imgs.length} 个，其中 ${withSrcset} 个带 srcset，${lazy} 个 lazy`);
     console.log(`  图片格式   ${[...formats].join(', ') || '无'}`);
 
     if (title === '(缺失)' || canonical === '(缺失)') ok = false;
     if (imgs.length > 0 && withSrcset === 0) {
       console.log('  ⚠ 有图片但没有任何 srcset —— 响应式优化没生效');
+      ok = false;
+    }
+    // 社交分享卡片：有素材的页面都应该有 og:image，否则分享出去是空白卡
+    if (ogImage === '(缺失)' && page !== 'about/index.html') {
+      console.log('  ✗ 缺少 og:image —— 分享到社交平台会显示空白卡片');
+      ok = false;
+    }
+    // og:image 不应指向未经优化的原图（会让 dist 暴涨）
+    if (/\.png$/i.test(ogImage)) {
+      console.log('  ✗ og:image 指向 PNG 原图，应改用 getImage() 生成小尺寸分享图');
       ok = false;
     }
   }

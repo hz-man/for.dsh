@@ -3,9 +3,10 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 // 静态输出：构建产物是纯 HTML/CSS/图片，可直接丢给 Vercel / Netlify / GitHub Pages。
-// 部署到自定义域名后，把下面的 site 改成真实域名，sitemap 和绝对 URL 才会正确。
+// site 必须和线上地址一致，它决定 canonical、sitemap、og:url 与站内绝对链接。
+// 绑定自定义域名后，把这里换成新域名并重新部署。
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://for-dsh.vercel.app',
   output: 'static',
 
   // Astro 7 默认 'jsx' 会按 JSX 规则吃掉行内元素之间的空格，

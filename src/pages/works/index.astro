@@ -1,12 +1,24 @@
 ---
+import { getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import WorkCard from '../../components/WorkCard.astro';
 import { works } from '../../lib/works';
+import { getCover } from '../../lib/media';
 
 const categories = [...new Set(works.map((work) => work.category))];
+
+// 列表页的社交分享卡片，用第一个作品的封面
+const first = works[0];
+const firstCover = first ? getCover(first.slug, first.images, first.cover) : undefined;
+const posterSrc = first?.videos[0]?.poster
+  ? `/media/videos/${first.slug}/${first.videos[0].poster}`
+  : undefined;
+const socialImage = firstCover
+  ? (await getImage({ src: firstCover.image, width: 1200, height: 630, fit: 'cover', format: 'webp' })).src
+  : posterSrc;
 ---
 
-<Base title="作品" description="全部作品列表。">
+<Base title="作品" description="全部作品列表。" image={socialImage}>
   <section class="container head">
     <p class="eyebrow">Index</p>
     <h1>作品</h1>

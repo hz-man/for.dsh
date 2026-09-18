@@ -1,17 +1,29 @@
 ---
+import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import WorkCard from '../components/WorkCard.astro';
 import { works } from '../lib/works';
 import { site } from '../lib/site';
+import { getCover } from '../lib/media';
 
 const featured = works.filter((work) => work.featured);
 const lead = featured[0] ?? works[0];
 const rest = works.filter((work) => work !== lead).slice(0, 8);
 const totalFrames = works.reduce((sum, work) => sum + work.images.length, 0);
 const totalVideos = works.reduce((sum, work) => sum + work.videos.length, 0);
+
+// 首页的社交分享卡片：用第一个作品的封面生成 1200×630。
+// 不直接引用原图，否则 Astro 会把 3MB 的源图原样输出到 dist。
+const leadCover = lead ? getCover(lead.slug, lead.images, lead.cover) : undefined;
+const posterSrc = lead?.videos[0]?.poster
+  ? `/media/videos/${lead.slug}/${lead.videos[0].poster}`
+  : undefined;
+const socialImage = leadCover
+  ? (await getImage({ src: leadCover.image, width: 1200, height: 630, fit: 'cover', format: 'webp' })).src
+  : posterSrc;
 ---
 
-<Base description={site.description}>
+<Base description={site.description} image={socialImage}>
   <section class="hero container">
     <p class="eyebrow">{site.tagline}</p>
     <h1>{site.name}</h1>

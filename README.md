@@ -123,8 +123,21 @@ esbuild 需要启动子进程并用管道通信。受限沙箱会拒绝，放宽
 ## 已知约束
 
 - `public/media/videos/` 里的压缩视频会进 git。当前 22 条共约 71MB；如果总量继续变大，考虑 Git LFS 或对象存储。
-- 素材目录 `图片/`、`视频/` 默认不进 git（见 `.gitignore`），只提交处理后的成品。
+- 素材目录 `图片/`、`视频/` 不进 git（见 `.gitignore`），只提交处理后的成品。
 - 详情页没有做点击放大（lightbox）。要加的话在 `Gallery.astro` 上加一个 `<dialog>` 即可，不影响现有结构。
+- `src/assets/` 里的来源图已转成 WebP（508MB → 21MB）。这是**有损**转换，原始素材仍在 `图片/` 目录；若要重新生成，跑 `pnpm media` 然后 `node scripts/optimize-sources.mjs --write`。
+
+## 部署
+
+已部署到 Vercel：**https://for-dsh.vercel.app**
+
+- 仓库：https://github.com/hz-man/for.dsh （**必须保持 Public**，Vercel 免费版连不了私有仓库）
+- 推送到 `main` 分支会自动触发重新部署
+- 构建配置由 `vercel.json` 锁定，不依赖 Vercel 的自动探测
+
+**改域名时**：改 `astro.config.mjs` 的 `site` 再推送，否则 canonical / sitemap / og:url 会指向旧地址。改完用 `node scripts/check-urls.mjs <新域名>` 验证。
+
+**注意 `pnpm-workspace.yaml`**：里面的 `allowBuilds` 必须放行 `esbuild` 和 `sharp`。如果被拦下，`pnpm install` 会以 `ERR_PNPM_IGNORED_BUILDS` 退出码 1，**Vercel 会直接判定构建失败**（本地可能察觉不到，因为二进制可能已缓存）。
 
 ## 当前构建实测（供参考）
 
@@ -133,5 +146,7 @@ esbuild 需要启动子进程并用管道通信。受限沙箱会拒绝，放宽
 | 页面数 | 22（首页 + 列表 + 18 个作品 + 关于 + 404） |
 | 图片素材 | 133 张（16 组），3–6MB PNG → 9–58KB WebP |
 | 视频素材 | 22 条，原始 323MB → 约 71MB |
-| dist 总大小 | 约 111MB（视频 71MB + 优化图片 40MB + HTML 0.25MB） |
+| 仓库体积 | 92.5MB（原始素材 1.4GB 已排除） |
+| dist 总大小 | 约 106MB（视频 71MB + 优化图片 35MB + HTML 0.3MB） |
 | 索引页首屏 | 只加载 2 张图（其余 lazy），无任何视频字节 |
+

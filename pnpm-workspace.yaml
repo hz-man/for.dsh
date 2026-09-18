@@ -1,2 +1,11 @@
+# pnpm 工作区配置。
+#
+# allowBuilds 决定哪些依赖允许执行安装脚本（postinstall）。
+# 这个文件很关键：Vercel 构建时会读它。如果这里拦下了 esbuild 的构建脚本，
+# `pnpm install` 会以 ERR_PNPM_IGNORED_BUILDS 退出码 1，Vercel 判定构建失败。
+#
+# - esbuild：Vite/Astro 的底层打包器，需要原生二进制
+# - sharp：构建期生成 AVIF/WebP 多尺寸图片，Astro 的图片优化依赖它
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
+  sharp: true

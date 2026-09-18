@@ -1,0 +1,78 @@
+---
+import type { WorkVideo } from '../lib/works';
+import { formatDuration, videoBase } from '../lib/works';
+
+interface Props {
+  slug: string;
+  video: WorkVideo;
+  /** 同组里第一条传 true，让封面立刻加载（详情页首屏） */
+  eager?: boolean;
+}
+
+const { slug, video, eager = false } = Astro.props;
+
+const src = `${videoBase}/${slug}/${video.file}`;
+const poster = video.poster ? `${videoBase}/${slug}/${video.poster}` : undefined;
+
+// 竖屏素材用 9:16 框，横屏用 16:9，避免首帧加载时页面跳动
+const ratio =
+  video.width && video.height ? `${video.width} / ${video.height}` : '16 / 9';
+
+const label = video.title ?? video.file.replace(/\.[^.]+$/, '');
+const duration = formatDuration(video.duration);
+---
+
+<figure class="video" style={`--ratio: ${ratio}`}>
+  {/*
+    preload="none" 是这里最关键的一行：
+    页面初次加载时浏览器不会下载任何视频字节，只显示 poster 图。
+    用户点播放才开始拉流 —— 22 条视频的页面因此可以做到零视频开销。
+  */}
+  <video
+    controls
+    preload="none"
+    playsinline
+    poster={poster}
+    width={video.width}
+    height={video.height}
+  >
+    <source src={src} type="video/mp4" />
+    你的浏览器不支持 HTML5 视频播放，<a href={src}>点此下载视频</a>。
+  </video>
+
+  <figcaption>
+    <span class="name">{label}</span>
+    {duration && <span class="dur muted">{duration}</span>}
+  </figcaption>
+</figure>
+
+<style>
+  .video {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio);
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+
+  figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+
+  .dur {
+    font-variant-numeric: tabular-nums;
+  }
+</style>

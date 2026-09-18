@@ -1,0 +1,41 @@
+{
+  "$comment": "作品清单——这是唯一需要你维护的数据文件。slug 同时是素材目录名（src/assets/<slug>/）与网址路径（/works/<slug>/）。图片作品由 `pnpm media` 自动补 images 字段；视频作品需要你填 videos（见 src/data/works.schema.md）。",
+  "works": [
+    { "slug": "1", "title": "作品 01", "year": 2025, "category": "图片", "source": "图片/1", "order": 1 },
+    { "slug": "2", "title": "作品 02", "year": 2025, "category": "图片", "source": "图片/2", "order": 2 },
+    { "slug": "3", "title": "作品 03", "year": 2025, "category": "图片", "source": "图片/3", "order": 3 },
+    { "slug": "4", "title": "作品 04", "year": 2025, "category": "图片", "source": "图片/4", "order": 4 },
+    { "slug": "5", "title": "作品 05", "year": 2025, "category": "图片", "source": "图片/5", "order": 5 },
+    { "slug": "6", "title": "作品 06", "year": 2025, "category": "图片", "source": "图片/6", "order": 6 },
+    { "slug": "7", "title": "作品 07", "year": 2025, "category": "图片", "source": "图片/7", "order": 7 },
+    { "slug": "8", "title": "作品 08", "year": 2025, "category": "图片", "source": "图片/8", "order": 8 },
+    { "slug": "9", "title": "作品 09", "year": 2025, "category": "图片", "source": "图片/9", "order": 9 },
+    { "slug": "10", "title": "作品 10", "year": 2025, "category": "图片", "source": "图片/10", "order": 10 },
+    { "slug": "11", "title": "作品 11", "year": 2025, "category": "图片", "source": "图片/11", "order": 11 },
+    { "slug": "12", "title": "作品 12", "year": 2025, "category": "图片", "source": "图片/12", "order": 12 },
+    { "slug": "13", "title": "作品 13", "year": 2025, "category": "图片", "source": "图片/13", "order": 13 },
+    { "slug": "14", "title": "作品 14", "year": 2025, "category": "图片", "source": "图片/14", "order": 14 },
+    { "slug": "15", "title": "作品 15", "year": 2025, "category": "图片", "source": "图片/15", "order": 15 },
+    { "slug": "16", "title": "作品 16", "year": 2025, "category": "图片", "source": "图片/16", "order": 16 },
+    {
+      "slug": "used-car-feed",
+      "title": "二手车信息流",
+      "year": 2025,
+      "category": "视频",
+      "source": "视频/二手车信息流",
+      "kind": "video",
+      "summary": "19 条信息流短视频。",
+      "order": 20
+    },
+    {
+      "slug": "ai-modeling",
+      "title": "AI 建模",
+      "year": 2025,
+      "category": "视频",
+      "source": "视频/建模ai",
+      "kind": "video",
+      "summary": "3 条 AI 建模相关视频。",
+      "order": 21
+    }
+  ]
+}

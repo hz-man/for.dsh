@@ -1,0 +1,233 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+import { works, workDescription } from '../../lib/works';
+import type { Work } from '../../lib/works';
+import { getCover, getHighlighted } from '../../lib/media';
+
+export function getStaticPaths() {
+  return works.map((work) => ({ params: { slug: work.slug }, props: { work } }));
+}
+
+interface Props {
+  work: Work;
+}
+
+const { work } = Astro.props;
+
+const cover = getCover(work.slug, work.images, work.cover);
+const frames = getHighlighted(work.slug, work.images, work.highlight);
+const posterSrc = work.videos[0]?.poster
+  ? `/media/videos/${work.slug}/${work.videos[0].poster}`
+  : undefined;
+
+// 分享卡片：不要直接用 3MB 的封面原图（Astro 会把原图整个输出到 dist）。
+// 这里用 getImage 在构建期生成一张 1200×630 的优化图，社交平台有明确尺寸也更省流量。
+const social = cover
+  ? (await getImage({ src: cover.image, width: 1200, height: 630, fit: 'cover', format: 'webp' })).src
+  : posterSrc;
+
+const meta = [
+  ['年份', String(work.year)],
+  ['类型', work.category],
+  work.client ? ['客户', work.client] : null,
+  work.role ? ['职责', work.role] : null,
+  work.kind === 'image' && frames.length ? ['帧数', String(frames.length)] : null,
+  work.kind === 'video' && work.videos.length ? ['视频', String(work.videos.length)] : null,
+].filter((row): row is [string, string] => row !== null);
+---
+
+<Base
+  title={work.title}
+  description={workDescription(work)}
+  image={social}
+  path={`/works/${work.slug}/`}
+>
+  <article class="container work">
+    <header class="head">
+      <p class="eyebrow">
+        <a href="/works/">作品</a> / {work.year}
+      </p>
+      <h1>{work.title}</h1>
+      {work.summary && <p class="summary">{work.summary}</p>}
+
+      <dl class="meta">
+        {
+          meta.map(([label, value]) => (
+            <div class="row">
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      {
+        work.tags.length > 0 && (
+          <ul class="tags">
+            {work.tags.map((tag) => (
+              <li>{tag}</li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    {
+      cover ? (
+        <figure class="cover">
+          <Image
+            src={cover.image}
+            alt={`${work.title} 封面`}
+            widths={[720, 1080, 1440, 1920]}
+            sizes="(max-width: 76rem) 92vw, 72rem"
+            loading="eager"
+            decoding="sync"
+            fetchpriority="high"
+            quality={86}
+          />
+        </figure>
+      ) : posterSrc ? (
+        <figure class="cover">
+          <img src={posterSrc} alt={`${work.title} 封面`} />
+        </figure>
+      ) : null
+    }
+
+    <slot />
+
+    {
+      work.kind === 'video' ? (
+        <section class="videos section">
+          {work.videos.length === 0 ? (
+            <p class="empty muted">
+              视频还没处理。把 mp4 放进 <code>{work.source ?? `媒体目录`}</code> 后运行{' '}
+              <code>pnpm media</code>。
+            </p>
+          ) : (
+            <div class="video-grid">
+              {work.videos.map((video) => (
+                <VideoPlayer slug={work.slug} video={video} />
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        <section class="section">
+          <Gallery images={frames} eagerFirst={false} />
+        </section>
+      )
+    }
+
+    <nav class="back">
+      <a href="/works/">← 返回作品列表</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .work {
+    padding-block: var(--space-8) 0;
+  }
+
+  .head {
+    max-width: var(--container-narrow);
+    margin-bottom: var(--space-7);
+  }
+
+  .head h1 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2) var(--space-4);
+  }
+
+  .summary {
+    font-size: var(--step-1);
+    color: var(--text-muted);
+    max-width: 52ch;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5) var(--space-7);
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  .row dt {
+    font-size: var(--step--1);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .row dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-5);
+  }
+
+  .tags li {
+    padding: 0.15rem var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: var(--step--1);
+    color: var(--text-muted);
+  }
+
+  /* 封面用 contain：竖构图（3:4）放进宽幅框里可以完整显示，不裁切 */
+  .cover {
+    margin: 0 0 var(--space-7);
+    padding: var(--space-5);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: grid;
+    place-items: center;
+  }
+
+  .cover :global(img) {
+    max-height: 76vh;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+  }
+
+  .video-grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+
+  .empty {
+    padding: var(--space-6);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .back {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+    font-size: var(--step--1);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+</style>

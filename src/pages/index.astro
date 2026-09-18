@@ -1,0 +1,111 @@
+---
+import Base from '../layouts/Base.astro';
+import WorkCard from '../components/WorkCard.astro';
+import { works } from '../lib/works';
+import { site } from '../lib/site';
+
+const featured = works.filter((work) => work.featured);
+const lead = featured[0] ?? works[0];
+const rest = works.filter((work) => work !== lead).slice(0, 8);
+const totalFrames = works.reduce((sum, work) => sum + work.images.length, 0);
+const totalVideos = works.reduce((sum, work) => sum + work.videos.length, 0);
+---
+
+<Base description={site.description}>
+  <section class="hero container">
+    <p class="eyebrow">{site.tagline}</p>
+    <h1>{site.name}</h1>
+    <p class="lede muted">{site.description}</p>
+    <p class="stats muted">
+      {works.length} 组作品
+      {totalFrames > 0 && <> · {totalFrames} 帧图片</>}
+      {totalVideos > 0 && <> · {totalVideos} 条视频</>}
+    </p>
+  </section>
+
+  {lead && (
+    <section class="container lead">
+      <WorkCard work={lead} size="large" eager />
+    </section>
+  )}
+
+  {rest.length > 0 && (
+    <section class="section container">
+      <div class="section-head">
+        <h2>作品</h2>
+        <a class="more muted" href="/works/">全部 →</a>
+      </div>
+      <div class="grid">
+        {rest.map((work) => <WorkCard work={work} />)}
+      </div>
+    </section>
+  )}
+
+  {
+    works.length === 0 && (
+      <section class="section container">
+        <p class="muted">
+          还没有作品。编辑 <code>src/data/works.json</code> 并在原始素材目录里放好文件，
+          然后运行 <code>pnpm media</code>。
+        </p>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .hero {
+    padding-block: var(--space-9) var(--space-7);
+  }
+
+  .hero h1 {
+    font-size: var(--step-4);
+    margin-block: var(--space-3) var(--space-4);
+    letter-spacing: -0.03em;
+  }
+
+  .lede {
+    max-width: 46ch;
+    font-size: var(--step-1);
+  }
+
+  .stats {
+    margin-top: var(--space-5);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lead {
+    margin-bottom: var(--space-8);
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-head h2 {
+    font-size: var(--step-2);
+  }
+
+  .more {
+    font-size: var(--step--1);
+  }
+
+  .grid {
+    display: grid;
+    gap: var(--space-6) var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+</style>

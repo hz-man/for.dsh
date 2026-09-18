@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import { works } from '../../lib/works';
+
+const categories = [...new Set(works.map((work) => work.category))];
+---
+
+<Base title="作品" description="全部作品列表。">
+  <section class="container head">
+    <p class="eyebrow">Index</p>
+    <h1>作品</h1>
+    <p class="muted">共 {works.length} 组，按 {categories.join(' / ')} 分类。</p>
+  </section>
+
+  <section class="container">
+    <div class="grid">
+      {works.map((work, index) => <WorkCard work={work} eager={index < 2} />)}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-block: var(--space-8) var(--space-6);
+  }
+
+  .head h1 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .grid {
+    display: grid;
+    gap: var(--space-6) var(--space-5);
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+</style>

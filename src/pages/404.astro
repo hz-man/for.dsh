@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="页面不存在" noindex>
+  <section class="container section notfound">
+    <p class="eyebrow">404</p>
+    <h1>这个页面不存在</h1>
+    <p class="muted">链接可能已经失效，或者作品被移除了。</p>
+    <p><a href="/works/">去看作品 →</a></p>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    min-height: 50vh;
+  }
+
+  h1 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2) var(--space-4);
+  }
+
+  p + p {
+    margin-top: var(--space-5);
+  }
+</style>

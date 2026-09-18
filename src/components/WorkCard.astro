@@ -1,0 +1,164 @@
+---
+import { Image } from 'astro:assets';
+import type { Work } from '../lib/works';
+import { getCover } from '../lib/media';
+import { workDescription, workPath } from '../lib/works';
+
+interface Props {
+  work: Work;
+  /** 首页大图区用 large，网格用 default */
+  size?: 'default' | 'large';
+  /** 首屏卡片传 true 以提升 LCP */
+  eager?: boolean;
+}
+
+const { work, size = 'default', eager = false } = Astro.props;
+
+const cover = getCover(work.slug, work.images, work.cover);
+const poster = work.videos[0]?.poster;
+const posterSrc = poster ? `${'/media/videos'}/${work.slug}/${poster}` : undefined;
+const href = workPath(work);
+const frameCount = work.images.length + work.videos.length;
+---
+
+<article class:list={['card', size]}>
+  <a class="thumb" href={href} aria-label={work.title}>
+    {
+      cover ? (
+        <Image
+          src={cover.image}
+          alt={`${work.title} 预览`}
+          widths={
+            size === 'large'
+              ? [760, 1080, 1440]
+              : [480, 760, 1080]
+          }
+          sizes={
+            size === 'large'
+              ? '(max-width: 76rem) 92vw, 72rem'
+              : '(max-width: 40rem) 92vw, (max-width: 72rem) 46vw, 22rem'
+          }
+          loading={eager ? 'eager' : 'lazy'}
+          decoding={eager ? 'sync' : 'async'}
+          fetchpriority={eager ? 'high' : 'auto'}
+          quality={74}
+        />
+      ) : posterSrc ? (
+        <img src={posterSrc} alt={`${work.title} 预览`} loading={eager ? 'eager' : 'lazy'} />
+      ) : (
+        <span class="empty">素材待整理</span>
+      )
+    }
+
+    {work.kind === 'video' && <span class="badge">{frameCount} 条视频</span>}
+  </a>
+
+  <div class="meta">
+    <h3 class="title"><a href={href}>{work.title}</a></h3>
+    <p class="sub muted">
+      <span>{work.year}</span>
+      <span class="dot">·</span>
+      <span>{work.category}</span>
+      {work.kind === 'image' && frameCount > 0 && (
+        <>
+          <span class="dot">·</span>
+          <span>{frameCount} 帧</span>
+        </>
+      )}
+    </p>
+    {size === 'large' && work.summary && <p class="summary">{work.summary}</p>}
+  </div>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .thumb {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    aspect-ratio: 4 / 5;
+    transition:
+      border-color var(--dur) var(--ease),
+      transform var(--dur) var(--ease);
+  }
+
+  .card.large .thumb {
+    aspect-ratio: 3 / 2;
+  }
+
+  .thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 500ms var(--ease);
+  }
+
+  .thumb:hover {
+    border-color: var(--border-strong);
+  }
+
+  .thumb:hover :global(img) {
+    transform: scale(1.025);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thumb:hover :global(img) {
+      transform: none;
+    }
+  }
+
+  .empty {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    color: var(--text-dim);
+    font-size: var(--step--1);
+  }
+
+  .badge {
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    padding: 0.2rem var(--space-3);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    font-size: var(--step--1);
+    color: var(--text);
+  }
+
+  .title {
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+
+  .card.large .title {
+    font-size: var(--step-2);
+  }
+
+  .sub {
+    display: flex;
+    gap: var(--space-2);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dot {
+    color: var(--text-dim);
+  }
+
+  .summary {
+    margin-top: var(--space-2);
+    color: var(--text-muted);
+    max-width: 42ch;
+  }
+</style>

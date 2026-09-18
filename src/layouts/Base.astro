@@ -1,0 +1,159 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { site } from '../lib/site';
+import '../styles/tokens.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** 详情页传入封面，用于社交分享卡片 */
+  image?: string;
+  /** 详情页传入，生成 canonical 与 og:url */
+  path?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  image,
+  path,
+  noindex = false,
+} = Astro.props;
+
+const siteName = site.name;
+const pageTitle = title ? `${title} — ${siteName}` : siteName;
+const desc = description ?? site.description;
+const canonical = new URL(path ?? Astro.url.pathname, Astro.site ?? Astro.url);
+const ogImage = image ? new URL(image, Astro.site ?? Astro.url) : undefined;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {desc && <meta name="description" content={desc} />}
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    {desc && <meta property="og:description" content={desc} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={siteName} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+    <ClientRouter />
+  </head>
+
+  <body>
+    <a class="skip" href="#main">跳到正文</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/">{siteName}</a>
+        <nav class="nav" aria-label="主导航">
+          <a href="/works/">作品</a>
+          <a href="/about/">关于</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <span class="muted">{site.tagline}</span>
+        <span class="muted">
+          {site.email && <a href={`mailto:${site.email}`}>{site.email}</a>}
+          {
+            site.socials.map((s) => (
+              <a href={s.href} rel="me noopener" target="_blank">
+                {s.label}
+              </a>
+            ))
+          }
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: var(--space-3) var(--space-4);
+    background: var(--accent);
+    color: #fff;
+  }
+  .skip:focus {
+    left: var(--space-4);
+    top: var(--space-4);
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    min-height: 3.75rem;
+  }
+
+  .brand {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .brand:hover {
+    color: var(--text);
+  }
+
+  .nav {
+    display: flex;
+    gap: var(--space-5);
+    font-size: var(--step--1);
+  }
+  .nav a {
+    color: var(--text-muted);
+    transition: color var(--dur) var(--ease);
+  }
+  .nav a:hover {
+    color: var(--text);
+  }
+
+  .site-footer {
+    margin-top: var(--space-9);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: var(--step--1);
+  }
+
+  .footer-inner a + a {
+    margin-left: var(--space-4);
+  }
+</style>

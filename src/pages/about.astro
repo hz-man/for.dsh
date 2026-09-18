@@ -1,0 +1,80 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../lib/site';
+import { works } from '../lib/works';
+
+const categories = [...new Set(works.map((work) => work.category))];
+---
+
+<Base title="关于" description={site.description}>
+  <section class="container container-narrow section">
+    <p class="eyebrow">About</p>
+    <h1>关于</h1>
+
+    <div class="prose">
+      <p>{site.description}</p>
+      <p class="muted">
+        这里放你的自我介绍：做什么方向、做过什么、怎么联系。编辑
+        <code>src/data/site.json</code> 里的字段即可，不用动这个页面。
+      </p>
+
+      <dl class="facts">
+        <div><dt>方向</dt><dd>{categories.join(' / ') || '—'}</dd></div>
+        <div><dt>作品</dt><dd>{works.length} 组</dd></div>
+        {
+          site.email && (
+            <div>
+              <dt>邮箱</dt>
+              <dd>
+                <a href={`mailto:${site.email}`}>{site.email}</a>
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+    </div>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    font-size: var(--step-3);
+    margin-block: var(--space-2) var(--space-6);
+  }
+
+  .prose p {
+    margin-bottom: var(--space-4);
+    max-width: 56ch;
+  }
+
+  .facts {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+  }
+
+  .facts div {
+    display: flex;
+    gap: var(--space-5);
+  }
+
+  dt {
+    min-width: 4rem;
+    color: var(--text-dim);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+</style>

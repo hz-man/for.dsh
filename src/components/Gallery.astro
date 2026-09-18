@@ -1,0 +1,96 @@
+---
+import { Image } from 'astro:assets';
+import type { WorkImage } from '../lib/media';
+
+interface Props {
+  images: WorkImage[];
+  /** 首帧是否为 LCP 元素（详情页首屏传 true） */
+  eagerFirst?: boolean;
+  caption?: boolean;
+}
+
+const { images, eagerFirst = false, caption = false } = Astro.props;
+
+// 列宽档位：与 WorkCard 保持一致，同一张图在两个页面之间可以复用产物，不重复生成。
+const widths = [480, 760, 1080];
+const sizes = '(max-width: 40rem) 92vw, (max-width: 72rem) 46vw, 30rem';
+---
+
+{
+  images.length === 0 ? (
+    <p class="empty muted">
+      这个作品还没有素材。把图片放进对应目录后运行 <code>pnpm media</code>。
+    </p>
+  ) : (
+    <div class="grid">
+      {images.map((item, index) => (
+        <figure class="item">
+          <Image
+            src={item.image}
+            alt={`${item.name}`}
+            widths={widths}
+            sizes={sizes}
+            loading={eagerFirst && index === 0 ? 'eager' : 'lazy'}
+            decoding={eagerFirst && index === 0 ? 'sync' : 'async'}
+            quality={74}
+          />
+          {caption && <figcaption>{item.name}</figcaption>}
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .grid {
+    /* CSS 多列瀑布流：竖构图（这批素材是 3:4）比等高网格更省空间、更像画册 */
+    column-count: 2;
+    column-gap: var(--space-4);
+  }
+
+  @media (max-width: 34rem) {
+    .grid {
+      column-count: 1;
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .grid {
+      column-count: 3;
+    }
+  }
+
+  .item {
+    break-inside: avoid;
+    margin: 0 0 var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .item :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--step--1);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty {
+    padding: var(--space-6);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .empty code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+</style>

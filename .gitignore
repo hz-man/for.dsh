@@ -1,0 +1,30 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.astro/
+.pnpm-store/
+
+# 原始素材（1.4GB，含 133 张 3-6MB 的 PNG 和 22 个原始 mp4）
+# 绝不入库：构建完全不需要它们，只有本地跑 `pnpm media` 时才读。
+# 处理后的成品在 src/assets/ 和 public/media/，那些才需要提交。
+图片/
+视频/
+media-src/
+
+# 本地工具（ffmpeg 等，约 158MB，绝不入库；构建时不需要）
+tools/
+
+# 截图与自查产物
+shots/
+
+# 环境变量与系统文件
+.env
+.env.production
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志
+*.log
+npm-debug.log*
+pnpm-debug.log*
